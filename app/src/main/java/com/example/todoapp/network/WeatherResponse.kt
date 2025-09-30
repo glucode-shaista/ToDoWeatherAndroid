@@ -1,7 +1,8 @@
 package com.example.todoapp.network
 
-import android.location.Location
+//import android.location.Location
 
+//Maps JSON response from weather API into kotlin data class using GSON via Retrofit
 data class WeatherResponse(
     val location: Location,
     val current: Current,

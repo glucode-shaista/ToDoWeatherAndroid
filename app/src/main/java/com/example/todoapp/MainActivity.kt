@@ -14,14 +14,6 @@ import com.example.todoapp.viewmodel.WeatherViewModelFactory
 import com.example.todoapp.data.TaskDatabase
 import com.example.todoapp.data.TaskRepository
 import com.example.todoapp.data.WeatherRepository
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-
 import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -31,6 +23,8 @@ import android.Manifest
 
 class MainActivity : ComponentActivity() {
 
+    //Set up DB and Repo and Provide ViewModel using Factory
+    //ViewModel Initialization with factory
     private val taskViewModel: TaskViewModel by viewModels {
         val database = TaskDatabase.getDatabase(this)
         val repository = TaskRepository(database.taskDao())
@@ -38,11 +32,12 @@ class MainActivity : ComponentActivity() {
     }
 
     private val weatherViewModel : WeatherViewModel by viewModels {
-        val weatherRepository = WeatherRepository(apiKey = "c58e5d87bdc74404a6774912252406")
+        val weatherRepository = WeatherRepository(apiKey = BuildConfig.WEATHER_API_KEY) //Added to hide api key
         WeatherViewModelFactory(weatherRepository)
     }
 
     private val locationPermissionLauncher =
+        //request permission to get location, if denied fallbacks to default location Johannesburg
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
                 loadWeatherBasedOnLocation()
@@ -56,6 +51,7 @@ class MainActivity : ComponentActivity() {
 
         checkAndRequestLocationPermission()
 
+        //UI Setup, Theme and NavController
         setContent {
             ToDoAppTheme {
                 val navController = rememberNavController()
@@ -71,7 +67,7 @@ class MainActivity : ComponentActivity() {
     private fun checkAndRequestLocationPermission() {
         if (ContextCompat.checkSelfPermission(
             this,
-            Manifest.permission.ACCESS_FINE_LOCATION
+            Manifest.permission.ACCESS_FINE_LOCATION //Permission Handling
             ) == PackageManager.PERMISSION_GRANTED
             ) {
             loadWeatherBasedOnLocation()

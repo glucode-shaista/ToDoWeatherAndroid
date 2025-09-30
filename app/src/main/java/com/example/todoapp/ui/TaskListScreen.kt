@@ -14,10 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.materialIcon
-import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,12 +23,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.todoapp.data.Priority
 import com.example.todoapp.data.Task
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import com.example.todoapp.viewmodel.WeatherViewModel
 import com.example.todoapp.viewmodel.TaskViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.withIndex
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +37,7 @@ fun TaskListScreen(
 ) {
     //val tasks by viewModel.allTasks.collectAsState(initial = emptyList())
     //val isLoading by remember { derivedStateOf { tasks.isEmpty() } }
+
 
     val activeTasks by viewModel.incompleteTasks.collectAsState(initial = emptyList())
     val completedTasks by viewModel.completedTasks.collectAsState(initial = emptyList())
@@ -115,7 +110,7 @@ fun TaskListContent(
                 }
 
         }
-
+            // Active Tasks Section
             if (activeTasks.isNotEmpty()) {
                 item {
                     Text(
@@ -138,6 +133,8 @@ fun TaskListContent(
                     )
                 }
             }
+
+            // Completed Tasks Section
             if (completedTasks.isNotEmpty()) {
                 item {
                     Spacer(modifier = Modifier.height(16.dp))

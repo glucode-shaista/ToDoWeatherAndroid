@@ -5,7 +5,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -18,12 +17,15 @@ import com.example.todoapp.viewmodel.WeatherViewModel
 import com.example.todoapp.viewmodel.TaskViewModel
 
 
+//Manages screen transitions and navigation logic.
 @Composable
 fun AppNavGraph(
     navController:  NavHostController,
     weatherViewModel: WeatherViewModel,
     taskViewModel: TaskViewModel ) {
+    //Hosts all navigation routes
     NavHost(
+        //Manage screen transitions
         navController = navController,
         startDestination = Screen.TaskList.route
     ) {
@@ -32,7 +34,7 @@ fun AppNavGraph(
                 viewModel = taskViewModel,
                 weatherViewModel = weatherViewModel,
                 onEditClick = { task ->
-                navController.navigate(Screen.EditTask.createRoute(task.id))
+                navController.navigate(Screen.EditTask.createRoute(task.id)) //taskId, get specific task
                 },
                 onAddClick = {
                     navController.navigate(Screen.AddTask.route)
@@ -58,7 +60,9 @@ fun AppNavGraph(
             arguments = listOf(navArgument("taskId") { type = NavType.IntType })
         ) { backStackEntry ->
             val taskId = backStackEntry.arguments?.getInt("taskId") ?: return@composable
+            //Safely collect the latest tasks from StateFlow
             val tasks by taskViewModel.allTasks.collectAsState()
+            //Can find the task safely
             val task = remember(tasks) {
                 tasks.find { it.id == taskId}
             }
@@ -75,6 +79,7 @@ fun AppNavGraph(
                     }
                 )
             } else {
+                //Handle task not found, navigate back.
                     LaunchedEffect(Unit) {
                         navController.popBackStack()
                     }

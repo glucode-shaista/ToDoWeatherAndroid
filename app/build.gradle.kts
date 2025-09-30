@@ -1,9 +1,26 @@
+//Hide API Key
+import java.util.Properties
+import java.io.File
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     //id("com.google.devtools.ksp")
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.ksp) //activates ksp
+}
+//Hide API Key
+val localProps = Properties().apply {
+    val f = File(rootProject.rootDir, "local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+
+val weatherApiKey: String = localProps.getProperty("WEATHER_API_KEY")
+    ?: System.getenv("WEATHER_API_KEY")
+    ?: ""
+
+if (weatherApiKey.isEmpty()) {
+    logger.warn("WEATHER_API_KEY not set. Build will succeed, but API calls may fail.")
 }
 
 android {
@@ -18,6 +35,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Makes BuildConfig.WEATHER_API_KEY available in code - Hide API Key
+        buildConfigField("String", "WEATHER_API_KEY", "\"$weatherApiKey\"")
     }
 
     buildTypes {
@@ -38,6 +57,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
 }
@@ -73,12 +93,15 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
 
-    // Location (for weather later)
+    // Location
     implementation(libs.play.services.location)
 
-    // Networking (for weather later)
+    // Networking
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+
+    // Compose Material (provides pullRefresh APIs)
+    implementation("androidx.compose.material:material")
 
     //Navigation
     implementation(libs.androidx.navigation.compose)

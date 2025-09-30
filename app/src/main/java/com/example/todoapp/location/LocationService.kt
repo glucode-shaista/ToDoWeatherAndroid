@@ -5,8 +5,9 @@ import android.content.Context
 import android.location.Location
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.tasks.Task
 
+//FusedLocationProviderClient - get user device current location
+//Add permissions in AndroidManifest
 class LocationService(context: Context) {
     private val fusedLocationProviderClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
@@ -22,3 +23,4 @@ class LocationService(context: Context) {
             }
     }
 }
+//Gets location - sends to view model, if fails returns null

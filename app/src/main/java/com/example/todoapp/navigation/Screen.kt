@@ -1,11 +1,9 @@
 package com.example.todoapp.navigation
 
-//object Routes{
-   // const val TaskList = "task_list"
-    //const val EditTask = "edit_task"
 
-//}
-
+//AppNavGraph uses to refer to screens in type-safe and consistent way.
+//Defines Routes in navigation
+//Allows inheritance and to use functions
 sealed class Screen(val route: String) {
     object TaskList : Screen("task_list")
     object AddTask : Screen("add_task")

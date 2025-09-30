@@ -26,16 +26,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.material3.Text
 import androidx.compose.ui.tooling.preview.Preview
 import java.time.format.DateTimeFormatter
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.CardColors
-import androidx.compose.material3.CardElevation
-import androidx.compose.ui.input.pointer.motionEventSpy
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import com.example.todoapp.data.Priority
 import com.example.todoapp.data.Task

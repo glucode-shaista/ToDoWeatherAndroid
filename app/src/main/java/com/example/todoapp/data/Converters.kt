@@ -4,14 +4,18 @@ import androidx.room.TypeConverter
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+//Provides time converters for Room DB, to store complex data types, doesn't support by default
+//Store tasks date and priority cleanly in SQLite.
 class Converters {
     private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
+    //Converts to string to store in DB
     @TypeConverter
     fun fromLocalDateTime(value: LocalDateTime?): String? {
         return value?.format(formatter)
     }
 
+    //Converts Priority enum to string to save in DB.
     @TypeConverter
     fun toLocalDateTime(value: String?): LocalDateTime? {
         return value?.let {
