@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.material3.Text
 import androidx.compose.ui.tooling.preview.Preview
 import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -48,57 +49,95 @@ fun TaskItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 6.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFBBDEFB)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = MaterialTheme.shapes.medium
     ) {
-        Column(modifier = Modifier.padding(16.dp)){
-
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ){
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
-                Text(
-                    text = task.title,
-                    fontWeight = FontWeight.SemiBold,
-                    style = TextStyle(
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = task.title,
+                        fontWeight = FontWeight.SemiBold,
+                        style = TextStyle(
+                            fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                            textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
+                        )
                     )
-                )
+                    
+                    if (task.description.isNotBlank()) {
+                        Text(
+                            text = task.description,
+                            modifier = Modifier.padding(top = 4.dp),
+                            style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
+                            textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
+                        )
+                    }
+                }
 
                 IconButton(onClick = onFavoriteClick) {
                     Icon(
                         imageVector = if (task.favorite) Icons.Filled.Star else Icons.Outlined.StarOutline,
                         contentDescription = "Favorite",
-                        tint = if (task.favorite) Color(0xFFFFC107) else Color.Gray
+                        tint = if (task.favorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            }
-
-            if (task.description.isNotBlank()) {
-
-                Text(
-                    text = task.description,
-                    modifier = Modifier.padding(top = 4.dp),
-                    style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
-                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
-                )
             }
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                Text(text = task.currentDateTime?.format(formatter) ?: "No Date",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
+                Column {
+                    // Category
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = task.category.icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(12.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = task.category.displayName,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    // Created at
+                    Text(
+                        text = "Created: ${task.createdDateTime.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    // Due date
+                    Text(
+                        text = if (task.dueDateTime != null) {
+                            "Due: ${task.dueDateTime.format(DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' HH:mm"))}"
+                        } else {
+                            "Due: No due date"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (task.dueDateTime != null && task.dueDateTime.isBefore(LocalDateTime.now()) && !task.isCompleted) {
+                            Color(0xFFFF1744) // Red for overdue tasks
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+                    )
+                }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
@@ -106,9 +145,9 @@ fun TaskItem(
                             .size(10.dp)
                             .background(
                                 color = when (task.priority) {
-                                    Priority.High -> Color.Red
-                                    Priority.Medium -> Color(0xFFFFA000)
-                                    Priority.Low -> Color.Blue
+                                    Priority.High -> Color(0xFFFF1744)    // Bright Red
+                                    Priority.Medium -> Color(0xFFFF9800)  // Bright Orange
+                                    Priority.Low -> Color(0xFF4CAF50)     // Bright Green
                                 },
                                 shape = CircleShape
                             )
@@ -165,9 +204,10 @@ fun PreviewTaskItem() {
         id = 1,
         title = "Do washing",
         description = "All white items",
+        dueDateTime = java.time.LocalDateTime.now(),
+        createdDateTime = java.time.LocalDateTime.now(),
         isCompleted = false,
         favorite = true,
-        currentDateTime = java.time.LocalDateTime.now(),
         priority = Priority.Low
     )
 

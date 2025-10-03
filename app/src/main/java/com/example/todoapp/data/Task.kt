@@ -14,9 +14,14 @@ data class Task(
     val id: Int = 0,
     val title: String,
     val description: String,
-    val currentDateTime: LocalDateTime? = LocalDateTime.now(),
+    val dueDateTime: LocalDateTime? = null, // When the task is due
+    val createdDateTime: LocalDateTime = LocalDateTime.now(), // When task was created
     val isCompleted: Boolean = false, //Whether task is completed or not.
     val favorite: Boolean = false,
-    val priority: Priority = Priority.Low
-
-)
+    val priority: Priority = Priority.Low,
+    val category: Category = Category.OTHER // New field for categorization
+) {
+    // Backward compatibility - map currentDateTime to dueDateTime
+    val currentDateTime: LocalDateTime?
+        get() = dueDateTime
+}

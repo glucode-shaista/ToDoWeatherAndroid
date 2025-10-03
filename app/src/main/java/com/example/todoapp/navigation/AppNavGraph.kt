@@ -13,23 +13,56 @@ import androidx.navigation.navArgument
 import com.example.todoapp.ui.AddTaskScreen
 import com.example.todoapp.ui.TaskListScreen
 import com.example.todoapp.ui.EditTaskScreen
+import com.example.todoapp.ui.OnboardingScreen
 import com.example.todoapp.viewmodel.WeatherViewModel
 import com.example.todoapp.viewmodel.TaskViewModel
-
+import com.example.todoapp.data.Task
+import com.example.todoapp.data.OnboardingManagerInterface
+import java.time.LocalDateTime
 
 //Manages screen transitions and navigation logic.
 @Composable
 fun AppNavGraph(
     navController:  NavHostController,
     weatherViewModel: WeatherViewModel,
-    taskViewModel: TaskViewModel ) {
+    taskViewModel: TaskViewModel,
+    onboardingManager: OnboardingManagerInterface,
+    onRequestLocationPermission: () -> Unit = {}
+) {
+    // Determine start destination based on onboarding status
+    val startDestination = if (onboardingManager.isOnboardingCompleted()) {
+        Screen.TaskList.route
+    } else {
+        Screen.Onboarding.route
+    }
+    
     //Hosts all navigation routes
     NavHost(
         //Manage screen transitions
         navController = navController,
-        startDestination = Screen.TaskList.route
+        startDestination = startDestination
     ) {
+        // Onboarding screen
+        composable(route = Screen.Onboarding.route) {
+            OnboardingScreen(
+                onFinish = {
+                    onboardingManager.setOnboardingCompleted()
+                    navController.navigate(Screen.TaskList.route) {
+                        // Clear the onboarding screen from back stack
+                        popUpTo(Screen.Onboarding.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onRequestLocationPermission = onRequestLocationPermission
+            )
+        }
         composable(route = Screen.TaskList.route) {
+            // Load weather when entering main app (after onboarding or on subsequent launches)
+            LaunchedEffect(Unit) {
+                weatherViewModel.loadWeatherForCurrentLocation()
+            }
+            
             TaskListScreen(
                 viewModel = taskViewModel,
                 weatherViewModel = weatherViewModel,
@@ -38,15 +71,26 @@ fun AppNavGraph(
                 },
                 onAddClick = {
                     navController.navigate(Screen.AddTask.route)
-                }
+                },
+                onRequestLocationPermission = onRequestLocationPermission
             )
         }
 
         composable(route = Screen.AddTask.route) {
             AddTaskScreen(
-                viewModel = taskViewModel,
-                onSave = { task ->
-                    taskViewModel.createTask(task)
+                onSave = { title, description, priority, category, dueDateTime ->
+                    val newTask = Task(
+                        id = 0, // Room will auto-generate
+                        title = title,
+                        description = description,
+                        priority = priority,
+                        category = category,
+                        dueDateTime = dueDateTime,
+                        createdDateTime = LocalDateTime.now(),
+                        isCompleted = false,
+                        favorite = false
+                    )
+                    taskViewModel.createTask(newTask)
                     navController.popBackStack()
                 },
                 onCancel = {
@@ -70,11 +114,17 @@ fun AppNavGraph(
             if (task != null) {
                 EditTaskScreen(
                     task = task,
-                    onSaveClick = { updatedTask ->
-                        taskViewModel.updateTask(updatedTask)
+                    onSave = { title, description, priority, category, dueDateTime ->
+                        taskViewModel.updateTask(task.copy(
+                            title = title,
+                            description = description,
+                            priority = priority,
+                            category = category,
+                            dueDateTime = dueDateTime
+                        ))
                         navController.popBackStack()
                     },
-                    onCancelClick = {
+                    onCancel = {
                         navController.popBackStack()
                     }
                 )

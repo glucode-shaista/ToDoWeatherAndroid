@@ -8,6 +8,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     //id("com.google.devtools.ksp")
     alias(libs.plugins.ksp) //activates ksp
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.hilt.android)
 }
 //Hide API Key
 val localProps = Properties().apply {
@@ -74,11 +76,22 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.media3.common.ktx)
+    
+    // Testing dependencies
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.androidx.test.ext.junit.ktx)
+    
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.androidx.test.ext.junit.ktx)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
@@ -100,8 +113,9 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
 
-    // Compose Material (provides pullRefresh APIs)
-    implementation("androidx.compose.material:material")
+    // Compose Material (provides pullRefresh APIs
+    implementation(libs.compose.material)
+
 
     //Navigation
     implementation(libs.androidx.navigation.compose)
@@ -109,4 +123,8 @@ dependencies {
     implementation(libs.gson)
 
     implementation(libs.coil.compose)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
 }

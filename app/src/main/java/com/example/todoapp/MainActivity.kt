@@ -9,47 +9,41 @@ import com.example.todoapp.navigation.AppNavGraph
 import com.example.todoapp.ui.theme.ToDoAppTheme
 import com.example.todoapp.viewmodel.TaskViewModel
 import com.example.todoapp.viewmodel.WeatherViewModel
-import com.example.todoapp.viewmodel.TaskViewModelFactory
-import com.example.todoapp.viewmodel.WeatherViewModelFactory
-import com.example.todoapp.data.TaskDatabase
-import com.example.todoapp.data.TaskRepository
-import com.example.todoapp.data.WeatherRepository
+//import com.example.todoapp.viewmodel.TaskViewModelFactory
+//import com.example.todoapp.viewmodel.WeatherViewModelFactory
+//import com.example.todoapp.data.TaskDatabase
+//import com.example.todoapp.data.TaskRepository
+//import com.example.todoapp.data.WeatherRepository
 import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import com.example.todoapp.location.LocationService
+import com.example.todoapp.data.OnboardingManagerInterface
 import android.Manifest
 
 
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    //Set up DB and Repo and Provide ViewModel using Factory
-    //ViewModel Initialization with factory
-    private val taskViewModel: TaskViewModel by viewModels {
-        val database = TaskDatabase.getDatabase(this)
-        val repository = TaskRepository(database.taskDao())
-        TaskViewModelFactory (repository)
-    }
+    private val taskViewModel: TaskViewModel by viewModels()
 
-    private val weatherViewModel : WeatherViewModel by viewModels {
-        val weatherRepository = WeatherRepository(apiKey = BuildConfig.WEATHER_API_KEY) //Added to hide api key
-        WeatherViewModelFactory(weatherRepository)
-    }
+    private val weatherViewModel : WeatherViewModel by viewModels()
+
+    @Inject lateinit var onboardingManager: OnboardingManagerInterface
 
     private val locationPermissionLauncher =
-        //request permission to get location, if denied fallbacks to default location Johannesburg
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                loadWeatherBasedOnLocation()
-            } else {
-                weatherViewModel.loadWeather("Johannesburg")
-            }
+            // Permission result handled, now load weather (ViewModel will handle location internally)
+            weatherViewModel.loadWeatherForCurrentLocation()
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        checkAndRequestLocationPermission()
+        // DEMO MODE: Reset onboarding for showcasing - remove after demo
+        //onboardingManager.resetOnboarding()
 
         //UI Setup, Theme and NavController
         setContent {
@@ -58,35 +52,14 @@ class MainActivity : ComponentActivity() {
                 AppNavGraph(
                     navController = navController,
                     taskViewModel = taskViewModel,
-                    weatherViewModel = weatherViewModel
+                    weatherViewModel = weatherViewModel,
+                    onboardingManager = onboardingManager,
+                    onRequestLocationPermission = {
+                        // Request location permission during onboarding
+                        locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    }
                 )
             }
         }
     }
-
-    private fun checkAndRequestLocationPermission() {
-        if (ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_FINE_LOCATION //Permission Handling
-            ) == PackageManager.PERMISSION_GRANTED
-            ) {
-            loadWeatherBasedOnLocation()
-        } else {
-            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-    }
-
-    private fun loadWeatherBasedOnLocation() {
-        val locationService = LocationService(this)
-        locationService.getCurrentLocation {  location ->
-            if (location != null) {
-                val latLng = "${location.latitude}, ${location.longitude}"
-                weatherViewModel.loadWeather(latLng)
-            } else {
-                weatherViewModel.loadWeather("Johannesburg")
-            }
-        }
-    }
 }
-
-
